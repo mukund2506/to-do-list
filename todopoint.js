@@ -2,15 +2,15 @@ import { LightningElement,api } from 'lwc';
 import updateTodo from '@salesforce/apex/ToDoController.updateTodo';
 import deleteTodo from '@salesforce/apex/ToDoController.deleteTodo';
 
-export default class ToDoItem extends LightningElement {
+export default class todopoint extends LightningElement {
     @api todoId;
-    @api todoName;
+    @api Name;
     @api done = false;
 
     updateHandler(){
         const todo = {
             todoId: this.todoId,
-            todoName: this.todoName,
+            Name: this.Name,
             done : !this.done
         };
 

@@ -51,7 +51,7 @@ export default class manger extends LightningElement {
 
   addTodoHandler() {
     const inputBox = this.template.querySelector("lightning-input");
-    const todo = { todoName: inputBox.value, done: false };
+    const todo = { Name: inputBox.value, done: false };
 
     addTodo({ payload: JSON.stringify(todo) })
       .then(result => {

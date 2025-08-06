@@ -28,12 +28,12 @@
         <lightning-layout-item size="12">
             <div class="slds-m-top_large slds-text-heading_label">UPCOMING</div>
             <template for:each={upcomingTodos} for:item="todo">
-                <c-to-do-item key={todo.todoId} todo-name={todo.todoName} todo-id={todo.todoId}
+                <c-to-do-item key={todo.todoId} todo-name={todo.Name} todo-id={todo.todoId}
                     onupdate={updateTodoHandler} ondelete={deleteTodoHandler}></c-to-do-item>
             </template>
             <div class="slds-m-top_large slds-text-heading_label">COMPLETED</div>
             <template for:each={completedTodos} for:item="todo">
-                <c-to-do-item key={todo.todoId} todo-name={todo.todoName} todo-id={todo.todoId} done
+                <c-to-do-item key={todo.todoId} todo-name={todo.Name} todo-id={todo.todoId} done
                     onupdate={updateTodoHandler} ondelete={deleteTodoHandler}></c-to-do-item>
             </template>
         </lightning-layout-item>

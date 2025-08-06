@@ -24,6 +24,6 @@
 }
 
 .completed:hover {
-    background-color: rgba(127, 255, 212, 0.652)
+    background-color: rgba(127, 255, 212, 0.652);
     border-radius: 16px;
 }
