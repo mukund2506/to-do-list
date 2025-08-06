@@ -1,0 +1,29 @@
+
+.todo {
+    border: 1px solid lightgray;
+    padding: .5rem;
+    width: fit-content;
+    border-radius: 8px;
+    margin-top: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    transition: all .5s ease;
+}
+
+.upcoming {
+    background-color: rgb(244, 77, 77);
+}
+
+.upcoming:hover {
+    background-color: rgba(244, 77, 77, 0.407);
+    border-radius: 16px;
+}
+
+.completed {
+    background-color: rgb(91, 255, 62);
+}
+
+.completed:hover {
+    background-color: rgba(127, 255, 212, 0.652)
+    border-radius: 16px;
+}
