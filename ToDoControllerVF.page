@@ -1,0 +1,336 @@
+<apex:page controller="ToDoControllerVF" lightningStylesheets="true">
+    <apex:includeScript value="/soap/ajax/52.0/connection.js"/>
+    <apex:includeScript value="/soap/ajax/52.0/apex.js"/>
+
+    <style>
+        /* Global Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #f0f4f8, #e4ebf2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container */
+        .todo-container {
+            width: 100%;
+            max-width: 480px;
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        /* Fade in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+        }
+
+        .clock {
+            font-size: 26px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+ul li {
+    padding-left: 15px;
+    margin-left: 0;
+
+}
+
+        .greeting {
+            font-size: 18px;
+            margin-top: 6px;
+            color: #555;
+        }
+
+        /* Input Row */
+        .input-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 24px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #4CAF50, #66BB6A);
+            text-align: center;
+            line-height: 24px;
+            color: white;
+            font-size: 12px;
+            transition: width 0.5s ease;
+        }
+
+        /* Task List */
+        ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            transition: 0.3s;
+        }
+
+        li:hover {
+            background: #f1f1f1;
+        }
+
+        .Completed span:first-child {
+            text-decoration: line-through;
+            color: #4CAF50;
+        }
+
+        /* Task buttons */
+        .task-actions button {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .task-actions button:first-child {
+            color: #4CAF50;
+        }
+
+        .task-actions button:last-child {
+            color: #E53935;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .todo-container {
+                padding: 15px;
+            }
+
+            .clock {
+                font-size: 22px;
+            }
+
+            .greeting {
+                font-size: 16px;
+            }
+
+            input[type="text"] {
+                font-size: 13px;
+            }
+
+            button {
+                font-size: 13px;
+            }
+        }
+        
+button.add {
+    padding: 10px 20px;
+}
+    </style>
+
+    <div class="todo-container">
+        <!-- Header with Clock and Greeting -->
+        <div class="header">
+            <div class="clock" id="clock">00:00:00</div>
+            <div class="greeting" id="greeting">Hello, User</div>
+        </div>
+
+        <!-- Input Row -->
+        <div class="input-row">
+            <input type="text" id="newTask" placeholder="Enter new task..."/>
+            <button class="add" onclick="addTask()">Add</button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+
+        <!-- Task List -->
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        const apexClass = "ToDoControllerVF";
+function updateClockAndGreeting() {
+    const clock = document.getElementById('clock');
+    const greeting = document.getElementById('greeting');
+
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    
+    // Convert to 12-hour format
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+
+    clock.innerText = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+
+    // Greeting based on time
+    let message = "Hello";
+    const currentHour = now.getHours();
+    if (currentHour < 12) message = "Good Morning";
+    else if (currentHour < 18) message = "Good Afternoon";
+    else message = "Good Evening";
+
+    const userName = "{!$User.FirstName}";
+    greeting.innerText = `${message}🎉, ${userName}`;
+}
+
+        setInterval(updateClockAndGreeting, 1000);
+        updateClockAndGreeting();
+
+        // TASK MANAGEMENT
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
+        function loadTasks() {
+            Visualforce.remoting.Manager.invokeAction(
+                apexClass + ".getTasks",
+                function(result, event) {
+                    if(event.status) {
+                        renderTasks(result);
+                        updateProgressBar(result);
+                    } else {
+                        console.error(event.message);
+                    }
+                }
+            );
+        }
+
+        function renderTasks(tasks) {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = task.Status__c;
+                li.innerHTML = `
+                    <span>${task.Name}</span>
+                    <div class="task-actions">
+                        <button title="Complete" onclick="completeTask('${task.Id}')">✔</button>
+                        <button title="Delete" onclick="deleteTask('${task.Id}')">🗑</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function addTask() {
+            const taskName = document.getElementById('newTask').value.trim();
+            if(taskName === '') return;
+
+            Visualforce.remoting.Manager.invokeAction(
+                apexClass + ".addTask",
+                taskName,
+                function(result, event) {
+                    if(event.status) {
+                        document.getElementById('newTask').value = '';
+                        loadTasks();
+                    } else {
+                        console.error(event.message);
+                    }
+                }
+            );
+        }
+
+        function completeTask(taskId) {
+            Visualforce.remoting.Manager.invokeAction(
+                apexClass + ".markAsCompleted",
+                taskId,
+                function(result, event) {
+                    if(event.status) loadTasks();
+                }
+            );
+        }
+
+        function deleteTask(taskId) {
+            Visualforce.remoting.Manager.invokeAction(
+                apexClass + ".deleteTask",
+                taskId,
+                function(result, event) {
+                    if(event.status) loadTasks();
+                }
+ 
+            );
+        }
+
+        // PROGRESS BAR
+        function updateProgressBar(tasks) {
+            if (tasks.length === 0) {
+                document.getElementById('progressBar').style.width = '0%';
+                document.getElementById('progressBar').innerText = '0%';
+                return;
+            }
+
+            const completed = tasks.filter(t => t.Status__c === 'Completed').length;
+            const percentage = Math.round((completed / tasks.length) * 100);
+
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = percentage + '%';
+            progressBar.innerText = percentage + '%';
+        }
+    </script>
+</apex:page>
